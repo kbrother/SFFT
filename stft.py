@@ -50,12 +50,12 @@ def stft(x, fs, win, ov):
 	t = []
 
 	for i in range(win):
-		f.append(fs/2*(i+1))
+		f.append(fs/2*(i+1)/win)
 
 	for i in range(x.size):
 		t.append(1/fs*(i+1))
 
-	x_scale = int(x.size/win)
+	x_scale = int(x.size/ov)-3
 	x_index = 0
 	hWindow = np.hanning(win)
 	step_size = int(win - ov)
@@ -71,7 +71,7 @@ def stft(x, fs, win, ov):
 
 		while index_in_window < win:
 		
-			i = win*x_index + index_in_window
+			i = ov*x_index + index_in_window
 	
 			x_hanned[index_in_window] = x[i] * hWindow[index_in_window]
 			index_in_window += 1
@@ -83,8 +83,10 @@ def stft(x, fs, win, ov):
 
 		spectrogram[x_index, :] = x_fft[:math.ceil(win/2)]
 
+		'''
 		if x_index == 0:
 			print(x_fft)
+		'''
 
 		x_index += 1
 	
@@ -103,7 +105,7 @@ def plot_stft(spectrogram, t, f):
 	mini = spectrogram.min()
 	maxi = spectrogram.max()
 
-	im = plt.imshow(spectrogram, cmap=matplotlib.cm.coolwarm, origin='lower', vmin=mini, vmax=maxi)
+	im = plt.imshow(spectrogram, aspect='auto', extent=[0, t[-1], 0, f[-1]], cmap=matplotlib.cm.coolwarm, origin='lower', vmin=mini, vmax=maxi)
 	bar = plt.colorbar(im, ticks=[mini, maxi])
 	fig.savefig('origin.png')
 
@@ -113,7 +115,7 @@ if __name__=='__main__':
 	sig, fs = dataread(datapath)
 	win_size = int(25*1e-3*fs)
 	overlap_size = int(10*1e-3*fs)
-
-	print(sig.size/fs, fs/2)
+	
+	print(fs)
 	spec, t, f = stft(sig, fs, win_size, overlap_size)
 	plot_stft(spec, t, f)
